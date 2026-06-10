@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-50 text-gray-800;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-primary {
+  @apply btn bg-rose-600 text-white hover:bg-rose-700;
+}
+.btn-secondary {
+  @apply btn bg-gray-200 text-gray-700 hover:bg-gray-300;
+}
+.btn-ghost {
+  @apply btn bg-transparent text-gray-600 hover:bg-gray-100;
+}
+.btn-danger {
+  @apply btn bg-red-100 text-red-700 hover:bg-red-200;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 p-4;
+}
+
+.input {
+  @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent;
+}
+
+.table-row-hover {
+  @apply hover:bg-rose-50 transition-colors duration-100;
+}
