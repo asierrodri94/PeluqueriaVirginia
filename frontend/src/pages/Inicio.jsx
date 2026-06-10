@@ -23,6 +23,8 @@ export default function Inicio({ seccion }) {
   const [cargando, setCargando] = useState(false);
   const [modal, setModal] = useState(null); // null | "nueva" | facturaObj
   const [confirmEliminar, setConfirmEliminar] = useState(null);
+  const [editandoNums, setEditandoNums] = useState(false);
+  const [numsEditados, setNumsEditados] = useState({}); // { numOriginal -> valorEditado }
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -53,7 +55,7 @@ export default function Inicio({ seccion }) {
 
   const toggleCobrado = async (f) => {
     try {
-      await api.toggleCobrado(f.numFactura, mes, anyo, !f.cobrado, seccion);
+      await api.toggleCobrado(f.numFactura, f.dia, mes, anyo, !f.cobrado, seccion);
       setFacturas((prev) =>
         prev.map((x) => x.numFactura === f.numFactura ? { ...x, cobrado: !f.cobrado } : x)
       );
@@ -69,7 +71,7 @@ export default function Inicio({ seccion }) {
   const eliminar = async (f) => {
     const scrollY = window.scrollY;
     try {
-      await api.eliminarFactura(f.numFactura, mes, anyo, seccion);
+      await api.eliminarFactura(f.numFactura, f.dia, mes, anyo, seccion);
       toast.success("Factura eliminada");
       await cargar();
       requestAnimationFrame(() => window.scrollTo(0, scrollY));
@@ -81,6 +83,47 @@ export default function Inicio({ seccion }) {
   };
 
   const pendiente = resumen.total_importe - resumen.total_cobrado;
+
+  const iniciarEdicionNums = () => {
+    const init = {};
+    facturas.forEach((f) => { init[f.numFactura] = f.numFactura; });
+    setNumsEditados(init);
+    setEditandoNums(true);
+  };
+
+  const guardarNums = async () => {
+    const nuevos = facturas.map((f) => ({
+      diaOriginal: f.dia,
+      numOriginal: f.numFactura,
+      numNuevo: parseInt(numsEditados[f.numFactura], 10),
+    }));
+
+    // Validar que no hay duplicados
+    const vals = nuevos.map((c) => c.numNuevo);
+    if (new Set(vals).size !== vals.length) {
+      toast.error("Hay números de factura duplicados"); return;
+    }
+
+    // Validar que no hay saltos (deben ser 1..N consecutivos)
+    const sorted = [...vals].sort((a, b) => a - b);
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i] !== i + 1) {
+        const esperado = i + 1;
+        const anterior = sorted[i - 1] ?? 0;
+        toast.error(`Hay un salto: falta el número ${anterior + 1} antes del ${sorted[i]}`);
+        return;
+      }
+    }
+
+    try {
+      await api.reordenarFacturas(mes, anyo, nuevos, seccion);
+      toast.success("Números actualizados");
+      setEditandoNums(false);
+      cargar();
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -133,10 +176,24 @@ export default function Inicio({ seccion }) {
             <p>No hay facturas en {MESES[mes]} {anyo}</p>
           </div>
         ) : (
+          <>
+          {editandoNums && (
+            <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
+              <span className="text-sm text-amber-700">✏️ Editando números de factura — deben ser consecutivos sin saltos</span>
+              <div className="flex gap-2">
+                <button onClick={() => setEditandoNums(false)} className="btn-secondary text-xs">Cancelar</button>
+                <button onClick={guardarNums} className="btn-primary text-xs">Guardar cambios</button>
+              </div>
+            </div>
+          )}
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-4 py-3 text-left font-semibold text-gray-500">#</th>
+                <th
+                  onDoubleClick={iniciarEdicionNums}
+                  className="px-4 py-3 text-left font-semibold text-gray-500 cursor-pointer select-none"
+                  title="Doble clic para editar números"
+                >#</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-500">Fecha</th>
                 <th className="px-4 py-3 text-left font-semibold text-gray-500">Cliente</th>
                 <th className="px-4 py-3 text-right font-semibold text-gray-500">Importe</th>
@@ -147,7 +204,22 @@ export default function Inicio({ seccion }) {
             <tbody>
               {facturas.map((f) => (
                 <tr key={f.numFactura} className="border-b border-gray-100 table-row-hover">
-                  <td className="px-4 py-2.5 text-gray-400 font-mono">{f.numFactura}</td>
+                  <td className="px-2 py-1.5">
+                    {editandoNums ? (
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={numsEditados[f.numFactura] ?? f.numFactura}
+                        onChange={(e) =>
+                          setNumsEditados((prev) => ({ ...prev, [f.numFactura]: e.target.value }))
+                        }
+                        className="w-16 text-center border border-amber-300 rounded px-1 py-0.5 text-sm font-mono bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                    ) : (
+                      <span className="px-2 text-gray-400 font-mono">{f.numFactura}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-2.5 text-gray-600">
                     {String(f.dia).padStart(2, "0")}/{String(f.mes).padStart(2, "0")}/{f.anyo}
                   </td>
@@ -186,6 +258,7 @@ export default function Inicio({ seccion }) {
               ))}
             </tbody>
           </table>
+          </>
         )}
       </div>
 

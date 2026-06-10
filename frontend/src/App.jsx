@@ -1,12 +1,19 @@
 import { useState } from "react";
 import Inicio from "./pages/Inicio";
 import Servicios from "./pages/Servicios";
+import toast from "react-hot-toast";
 
 const PAGES = { inicio: "inicio", servicios: "servicios" };
 
 export default function App() {
   const [page, setPage] = useState(PAGES.inicio);
   const [seccion, setSeccion] = useState("A");
+  const [confirmCerrar, setConfirmCerrar] = useState(false);
+
+  const cerrarPrograma = async () => {
+    await fetch("/api/shutdown", { method: "POST" });
+    document.body.innerHTML = "<div style='font-family:sans-serif;text-align:center;padding-top:80px'><h1 style='font-size:2.5rem'>✅ Programa cerrado</h1><p style='font-size:1.3rem;color:#666'>Puedes cerrar esta pestaña.</p></div>";
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -46,9 +53,28 @@ export default function App() {
                 </button>
               ))}
             </div>
+            <button
+              onClick={() => setConfirmCerrar(true)}
+              className="ml-4 px-3 py-1.5 rounded-lg text-sm font-medium bg-rose-800 text-rose-200 hover:bg-rose-900 transition-colors"
+            >
+              ⏻ Cerrar
+            </button>
           </nav>
         </div>
       </header>
+
+      {confirmCerrar && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <h3 className="font-bold text-gray-800 mb-2">¿Cerrar el programa?</h3>
+            <p className="text-sm text-gray-500 mb-4">Se cerrará el servidor. Podrás cerrar esta pestaña después.</p>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setConfirmCerrar(false)} className="btn-secondary">Cancelar</button>
+              <button onClick={cerrarPrograma} className="btn-danger">Cerrar programa</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
         {page === PAGES.inicio && <Inicio seccion={seccion} />}

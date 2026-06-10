@@ -2,15 +2,17 @@ import { useState, useEffect } from "react";
 import { api } from "../api";
 import toast from "react-hot-toast";
 
-const today = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const defaultFecha = (mesActual, anyoActual) => {
+  const hoy = new Date();
+  const diasEnMes = new Date(anyoActual, mesActual, 0).getDate(); // último día del mes
+  const dia = Math.min(hoy.getDate(), diasEnMes);
+  return `${anyoActual}-${String(mesActual).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
 };
 
 export default function FacturaModal({ factura, mesActual, anyoActual, seccion, onClose, onSaved }) {
   const esNueva = !factura;
 
-  const [fecha, setFecha] = useState(today());
+  const [fecha, setFecha] = useState(defaultFecha(mesActual, anyoActual));
   const [nombre, setNombre] = useState("");
   const [cobrado, setCobrado] = useState(false);
   const [catalogo, setCatalogo] = useState([]);
@@ -25,7 +27,7 @@ export default function FacturaModal({ factura, mesActual, anyoActual, seccion, 
       setFecha(`${factura.anyo}-${mes}-${dia}`);
       setNombre(factura.nombre);
       setCobrado(factura.cobrado);
-      api.getServiciosFactura(factura.numFactura, mesActual, anyoActual, seccion)
+      api.getServiciosFactura(factura.numFactura, factura.dia, mesActual, anyoActual, seccion)
         .then(setLineas)
         .catch(() => {});
     }
@@ -63,7 +65,7 @@ export default function FacturaModal({ factura, mesActual, anyoActual, seccion, 
         await api.crearFactura(data, seccion);
         toast.success("Factura creada");
       } else {
-        await api.actualizarFactura(factura.numFactura, data, mesActual, anyoActual, seccion);
+        await api.actualizarFactura(factura.numFactura, data, factura.dia, mesActual, anyoActual, seccion);
         toast.success("Factura actualizada");
       }
       onSaved();

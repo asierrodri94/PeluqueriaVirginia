@@ -20,16 +20,18 @@ export const api = {
     req("GET", `/facturas?mes=${mes}&anyo=${anyo}&seccion=${seccion}`),
   getResumen: (mes, anyo, seccion) =>
     req("GET", `/facturas/resumen?mes=${mes}&anyo=${anyo}&seccion=${seccion}`),
-  getServiciosFactura: (num, mes, anyo, seccion) =>
-    req("GET", `/facturas/${num}/servicios?mes=${mes}&anyo=${anyo}&seccion=${seccion}`),
+  getServiciosFactura: (num, dia, mes, anyo, seccion) =>
+    req("GET", `/facturas/${num}/servicios?dia=${dia}&mes=${mes}&anyo=${anyo}&seccion=${seccion}`),
   crearFactura: (data, seccion) =>
     req("POST", `/facturas?seccion=${seccion}`, data),
-  actualizarFactura: (num, data, mesOriginal, anyoOriginal, seccion) =>
-    req("PUT", `/facturas/${num}?mes_original=${mesOriginal}&anyo_original=${anyoOriginal}&seccion=${seccion}`, data),
-  toggleCobrado: (num, mes, anyo, cobrado, seccion) =>
-    req("PATCH", `/facturas/${num}/cobrado?mes=${mes}&anyo=${anyo}&cobrado=${cobrado}&seccion=${seccion}`),
-  eliminarFactura: (num, mes, anyo, seccion) =>
-    req("DELETE", `/facturas/${num}?mes=${mes}&anyo=${anyo}&seccion=${seccion}`),
+  actualizarFactura: (num, data, diaOriginal, mesOriginal, anyoOriginal, seccion) =>
+    req("PUT", `/facturas/${num}?dia_original=${diaOriginal}&mes_original=${mesOriginal}&anyo_original=${anyoOriginal}&seccion=${seccion}`, data),
+  toggleCobrado: (num, dia, mes, anyo, cobrado, seccion) =>
+    req("PATCH", `/facturas/${num}/cobrado?dia=${dia}&mes=${mes}&anyo=${anyo}&cobrado=${cobrado}&seccion=${seccion}`),
+  eliminarFactura: (num, dia, mes, anyo, seccion) =>
+    req("DELETE", `/facturas/${num}?dia=${dia}&mes=${mes}&anyo=${anyo}&seccion=${seccion}`),
+  reordenarFacturas: (mes, anyo, cambios, seccion) =>
+    req("POST", `/facturas/reordenar?mes=${mes}&anyo=${anyo}&seccion=${seccion}`, cambios),
 
   // Servicios
   getServicios: () => req("GET", "/servicios"),
