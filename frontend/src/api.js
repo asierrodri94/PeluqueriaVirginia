@@ -51,6 +51,12 @@ export const api = {
   eliminarCompra: (num, dia, mes, anyo) =>
     req("DELETE", `/compras/${num}?dia=${dia}&mes=${mes}&anyo=${anyo}`),
 
+  // Estadísticas
+  getStatsMes: (mes, anyo, seccion) =>
+    req("GET", `/estadisticas/mes?mes=${mes}&anyo=${anyo}&seccion=${seccion}`),
+  getStatsAnyo: (anyo, seccion) =>
+    req("GET", `/estadisticas/anyo?anyo=${anyo}&seccion=${seccion}`),
+
   // Export
   exportarTrimestre: (mes, anyo, seccion) => {
     window.open(`${BASE}/export/trimestre?mes=${mes}&anyo=${anyo}&seccion=${seccion}`, "_blank");

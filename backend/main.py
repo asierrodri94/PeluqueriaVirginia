@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 from pathlib import Path
-from routers import facturas, servicios, export, compras
+from routers import facturas, servicios, export, compras, estadisticas
 from database import init_db
 import threading
 import os
@@ -16,6 +16,7 @@ app.include_router(facturas.router)
 app.include_router(servicios.router)
 app.include_router(export.router)
 app.include_router(compras.router)
+app.include_router(estadisticas.router)
 
 
 @app.post("/api/shutdown")

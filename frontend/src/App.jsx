@@ -2,9 +2,10 @@ import { useState } from "react";
 import Inicio from "./pages/Inicio";
 import Servicios from "./pages/Servicios";
 import Compras from "./pages/Compras";
+import Estadisticas from "./pages/Estadisticas";
 import toast from "react-hot-toast";
 
-const PAGES = { inicio: "inicio", compras: "compras", servicios: "servicios" };
+const PAGES = { inicio: "inicio", compras: "compras", estadisticas: "estadisticas", servicios: "servicios" };
 
 export default function App() {
   const [page, setPage] = useState(() => localStorage.getItem("page") || PAGES.inicio);
@@ -54,6 +55,14 @@ export default function App() {
               Compras
             </button>
             <button
+              onClick={() => { setPage(PAGES.estadisticas); localStorage.setItem("page", PAGES.estadisticas); }}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                page === PAGES.estadisticas ? "bg-white text-rose-600" : "text-white hover:bg-rose-500"
+              }`}
+            >
+              Estadísticas
+            </button>
+            <button
               onClick={() => { setPage(PAGES.servicios); localStorage.setItem("page", PAGES.servicios); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 page === PAGES.servicios ? "bg-white text-rose-600" : "text-white hover:bg-rose-500"
@@ -100,6 +109,7 @@ export default function App() {
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
         {page === PAGES.inicio && <Inicio seccion={seccion} mes={mes} anyo={anyo} cambiarMes={cambiarMes} />}
         {page === PAGES.compras && <Compras mes={mes} anyo={anyo} cambiarMes={cambiarMes} />}
+        {page === PAGES.estadisticas && <Estadisticas mes={mes} anyo={anyo} cambiarMes={cambiarMes} seccion={seccion} />}
         {page === PAGES.servicios && <Servicios />}
       </main>
     </div>
