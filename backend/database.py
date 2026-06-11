@@ -29,6 +29,10 @@ def init_db():
             CREATE TABLE IF NOT EXISTS producto (
                 productoid String, numeroProducto INT
             );
+            CREATE TABLE IF NOT EXISTS compra (
+                dia INT, mes INT, anyo INT, numCompra INT,
+                descripcion String, importe float
+            );
         """)
 
 

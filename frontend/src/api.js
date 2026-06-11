@@ -39,8 +39,23 @@ export const api = {
   actualizarServicio: (tipo, data) => req("PUT", `/servicios/${encodeURIComponent(tipo)}`, data),
   eliminarServicio: (tipo) => req("DELETE", `/servicios/${encodeURIComponent(tipo)}`),
 
+  // Compras
+  getCompras: (mes, anyo) =>
+    req("GET", `/compras?mes=${mes}&anyo=${anyo}`),
+  getResumenCompras: (mes, anyo) =>
+    req("GET", `/compras/resumen?mes=${mes}&anyo=${anyo}`),
+  crearCompra: (data) =>
+    req("POST", `/compras`, data),
+  actualizarCompra: (num, data, diaOriginal, mesOriginal, anyoOriginal) =>
+    req("PUT", `/compras/${num}?dia_original=${diaOriginal}&mes_original=${mesOriginal}&anyo_original=${anyoOriginal}`, data),
+  eliminarCompra: (num, dia, mes, anyo) =>
+    req("DELETE", `/compras/${num}?dia=${dia}&mes=${mes}&anyo=${anyo}`),
+
   // Export
   exportarTrimestre: (mes, anyo, seccion) => {
     window.open(`${BASE}/export/trimestre?mes=${mes}&anyo=${anyo}&seccion=${seccion}`, "_blank");
+  },
+  exportarTrimestreCompras: (mes, anyo) => {
+    window.open(`${BASE}/export/trimestre/compras?mes=${mes}&anyo=${anyo}`, "_blank");
   },
 };

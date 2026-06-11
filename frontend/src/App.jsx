@@ -1,13 +1,26 @@
 import { useState } from "react";
 import Inicio from "./pages/Inicio";
 import Servicios from "./pages/Servicios";
+import Compras from "./pages/Compras";
 import toast from "react-hot-toast";
 
-const PAGES = { inicio: "inicio", servicios: "servicios" };
+const PAGES = { inicio: "inicio", compras: "compras", servicios: "servicios" };
 
 export default function App() {
-  const [page, setPage] = useState(PAGES.inicio);
-  const [seccion, setSeccion] = useState("A");
+  const [page, setPage] = useState(() => localStorage.getItem("page") || PAGES.inicio);
+  const [seccion, setSeccion] = useState(() => localStorage.getItem("seccion") || "A");
+  const hoy = new Date();
+  const [mes, setMes] = useState(hoy.getMonth() + 1);
+  const [anyo, setAnyo] = useState(hoy.getFullYear());
+
+  const cambiarMes = (delta) => {
+    setMes((m) => {
+      const nuevo = m + delta;
+      if (nuevo < 1) { setAnyo((a) => a - 1); return 12; }
+      if (nuevo > 12) { setAnyo((a) => a + 1); return 1; }
+      return nuevo;
+    });
+  };
   const [confirmCerrar, setConfirmCerrar] = useState(false);
 
   const cerrarPrograma = async () => {
@@ -25,7 +38,7 @@ export default function App() {
           </div>
           <nav className="flex items-center gap-2">
             <button
-              onClick={() => setPage(PAGES.inicio)}
+              onClick={() => { setPage(PAGES.inicio); localStorage.setItem("page", PAGES.inicio); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 page === PAGES.inicio ? "bg-white text-rose-600" : "text-white hover:bg-rose-500"
               }`}
@@ -33,7 +46,15 @@ export default function App() {
               Facturas
             </button>
             <button
-              onClick={() => setPage(PAGES.servicios)}
+              onClick={() => { setPage(PAGES.compras); localStorage.setItem("page", PAGES.compras); }}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                page === PAGES.compras ? "bg-white text-rose-600" : "text-white hover:bg-rose-500"
+              }`}
+            >
+              Compras
+            </button>
+            <button
+              onClick={() => { setPage(PAGES.servicios); localStorage.setItem("page", PAGES.servicios); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 page === PAGES.servicios ? "bg-white text-rose-600" : "text-white hover:bg-rose-500"
               }`}
@@ -44,7 +65,7 @@ export default function App() {
               {["A", "B"].map((s) => (
                 <button
                   key={s}
-                  onClick={() => setSeccion(s)}
+                  onClick={() => { setSeccion(s); localStorage.setItem("seccion", s); }}
                   className={`px-3 py-1 rounded-md text-sm font-bold transition-colors ${
                     seccion === s ? "bg-white text-rose-600" : "text-white hover:bg-rose-500"
                   }`}
@@ -77,7 +98,8 @@ export default function App() {
       )}
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
-        {page === PAGES.inicio && <Inicio seccion={seccion} />}
+        {page === PAGES.inicio && <Inicio seccion={seccion} mes={mes} anyo={anyo} cambiarMes={cambiarMes} />}
+        {page === PAGES.compras && <Compras mes={mes} anyo={anyo} cambiarMes={cambiarMes} />}
         {page === PAGES.servicios && <Servicios />}
       </main>
     </div>

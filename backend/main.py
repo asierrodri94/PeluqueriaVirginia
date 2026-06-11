@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 from pathlib import Path
-from routers import facturas, servicios, export
+from routers import facturas, servicios, export, compras
 from database import init_db
 import threading
 import os
@@ -15,6 +15,7 @@ app = FastAPI(title="Gestor Peluquería Virginia")
 app.include_router(facturas.router)
 app.include_router(servicios.router)
 app.include_router(export.router)
+app.include_router(compras.router)
 
 
 @app.post("/api/shutdown")

@@ -14,10 +14,7 @@ const TRIMESTRE_LABEL = (mes) => {
 
 const fmt = (n) => n.toFixed(2).replace(".", ",") + " €";
 
-export default function Inicio({ seccion }) {
-  const hoy = new Date();
-  const [mes, setMes] = useState(hoy.getMonth() + 1);
-  const [anyo, setAnyo] = useState(hoy.getFullYear());
+export default function Inicio({ seccion, mes, anyo, cambiarMes }) {
   const [facturas, setFacturas] = useState([]);
   const [resumen, setResumen] = useState({ total_personas: 0, total_importe: 0, total_cobrado: 0 });
   const [cargando, setCargando] = useState(false);
@@ -44,14 +41,6 @@ export default function Inicio({ seccion }) {
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  const cambiarMes = (delta) => {
-    setMes((m) => {
-      const nuevo = m + delta;
-      if (nuevo < 1) { setAnyo((a) => a - 1); return 12; }
-      if (nuevo > 12) { setAnyo((a) => a + 1); return 1; }
-      return nuevo;
-    });
-  };
 
   const toggleCobrado = async (f) => {
     try {
