@@ -6,7 +6,6 @@ from routers import facturas, servicios, export, compras, estadisticas
 from database import init_db
 import threading
 import os
-import signal
 
 init_db()
 
@@ -21,7 +20,8 @@ app.include_router(estadisticas.router)
 
 @app.post("/api/shutdown")
 def shutdown():
-    threading.Timer(0.5, lambda: os.kill(os.getpid(), signal.SIGTERM)).start()
+    # Salida limpia con codigo 0 para que run.bat NO muestre el "pause" de error.
+    threading.Timer(0.5, lambda: os._exit(0)).start()
     return HTMLResponse("<html><body style='font-family:sans-serif;text-align:center;padding-top:80px'><h2>✅ Programa cerrado</h2><p>Puedes cerrar esta pestaña.</p></body></html>")
 
 
