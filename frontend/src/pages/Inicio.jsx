@@ -17,6 +17,7 @@ const fmt = (n) => n.toFixed(2).replace(".", ",") + " €";
 export default function Inicio({ seccion, mes, anyo, cambiarMes }) {
   const [facturas, setFacturas] = useState([]);
   const [resumen, setResumen] = useState({ total_personas: 0, total_importe: 0, total_cobrado: 0 });
+  const [dia, setDia] = useState(() => new Date().getDate());
   const [cargando, setCargando] = useState(false);
   const [modal, setModal] = useState(null); // null | "nueva" | facturaObj
   const [confirmEliminar, setConfirmEliminar] = useState(null);
@@ -73,6 +74,17 @@ export default function Inicio({ seccion, mes, anyo, cambiarMes }) {
 
   const pendiente = resumen.total_importe - resumen.total_cobrado;
 
+  // Datos del día seleccionado (calculados sobre las facturas ya cargadas del mes)
+  const diasEnMes = new Date(anyo, mes, 0).getDate();
+  const diaSel = Math.min(dia, diasEnMes);
+  const cambiarDia = (delta) => setDia(Math.min(Math.max(1, diaSel + delta), diasEnMes));
+
+  const facturasDia = facturas.filter((f) => f.dia === diaSel);
+  const personasDia = facturasDia.length;
+  const importeDia = facturasDia.reduce((s, f) => s + f.importe, 0);
+  const cobradoDia = facturasDia.reduce((s, f) => s + (f.cobrado ? f.importe : 0), 0);
+  const pendienteDia = importeDia - cobradoDia;
+
   const iniciarEdicionNums = () => {
     const init = {};
     facturas.forEach((f) => { init[f.numFactura] = f.numFactura; });
@@ -117,34 +129,75 @@ export default function Inicio({ seccion, mes, anyo, cambiarMes }) {
   return (
     <div className="space-y-4">
       {/* Cabecera mes + resumen */}
-      <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => cambiarMes(-1)} className="btn-ghost text-xl px-2">‹</button>
-          <div className="text-center min-w-[140px]">
-            <p className="text-lg font-bold text-gray-800">{MESES[mes]} {anyo}</p>
+      <div className="card flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        {/* Navegación: mes + día */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <button onClick={() => cambiarMes(-1)} className="btn-ghost text-xl px-2">‹</button>
+            <div className="text-center min-w-[150px]">
+              <p className="text-lg font-bold text-gray-800">{MESES[mes]} {anyo}</p>
+            </div>
+            <button onClick={() => cambiarMes(1)} className="btn-ghost text-xl px-2">›</button>
           </div>
-          <button onClick={() => cambiarMes(1)} className="btn-ghost text-xl px-2">›</button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => cambiarDia(-1)} className="btn-ghost text-xl px-2">‹</button>
+            <div className="min-w-[150px] flex items-center justify-center gap-2">
+              <span className="text-sm text-gray-500">Día</span>
+              <select
+                value={diaSel}
+                onChange={(e) => setDia(Number(e.target.value))}
+                className="border border-gray-300 rounded-lg px-2 py-1 text-sm font-semibold text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400"
+              >
+                {Array.from({ length: diasEnMes }, (_, i) => i + 1).map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <button onClick={() => cambiarDia(1)} className="btn-ghost text-xl px-2">›</button>
+          </div>
         </div>
 
-        <div className="flex gap-4 text-center">
-          <div>
-            <p className="text-2xl font-bold text-rose-600">{resumen.total_personas}</p>
-            <p className="text-xs text-gray-400">Personas</p>
+        {/* Resumen: mes + día */}
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-4 gap-4 text-center">
+            <div>
+              <p className="text-2xl font-bold text-rose-600">{resumen.total_personas}</p>
+              <p className="text-xs text-gray-400">Personas</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{fmt(resumen.total_importe)}</p>
+              <p className="text-xs text-gray-400">Facturado</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-green-600">{fmt(resumen.total_cobrado)}</p>
+              <p className="text-xs text-gray-400">Cobrado</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-amber-500">{fmt(pendiente)}</p>
+              <p className="text-xs text-gray-400">Pendiente</p>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-gray-800">{fmt(resumen.total_importe)}</p>
-            <p className="text-xs text-gray-400">Facturado</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-green-600">{fmt(resumen.total_cobrado)}</p>
-            <p className="text-xs text-gray-400">Cobrado</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-amber-500">{fmt(pendiente)}</p>
-            <p className="text-xs text-gray-400">Pendiente</p>
+          <div className="grid grid-cols-4 gap-4 text-center border-t border-gray-100 pt-2">
+            <div>
+              <p className="text-lg font-bold text-rose-600">{personasDia}</p>
+              <p className="text-[11px] text-gray-400">Personas día {diaSel}</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-gray-800">{fmt(importeDia)}</p>
+              <p className="text-[11px] text-gray-400">Facturado día</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-green-600">{fmt(cobradoDia)}</p>
+              <p className="text-[11px] text-gray-400">Cobrado día</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-amber-500">{fmt(pendienteDia)}</p>
+              <p className="text-[11px] text-gray-400">Pendiente día</p>
+            </div>
           </div>
         </div>
 
+        {/* Acciones */}
         <div className="flex gap-2">
           <button onClick={() => api.exportarTrimestre(mes, anyo, seccion)} className="btn-secondary text-sm">
             ⬇ Excel {TRIMESTRE_LABEL(mes)}
@@ -180,19 +233,26 @@ export default function Inicio({ seccion, mes, anyo, cambiarMes }) {
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th
                   onDoubleClick={iniciarEdicionNums}
-                  className="px-4 py-3 text-left font-semibold text-gray-500 cursor-pointer select-none"
+                  className="px-4 py-2 text-left font-semibold text-gray-500 cursor-pointer select-none"
                   title="Doble clic para editar números"
                 >#</th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-500">Fecha</th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-500">Cliente</th>
-                <th className="px-4 py-3 text-right font-semibold text-gray-500">Importe</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-500">Cobrado</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-500">Acciones</th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-500">Fecha</th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-500">Cliente</th>
+                <th className="px-4 py-2 text-right font-semibold text-gray-500">Importe</th>
+                <th className="px-4 py-2 text-center font-semibold text-gray-500">Cobrado</th>
+                <th className="px-4 py-2 text-center font-semibold text-gray-500">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {facturas.map((f) => (
-                <tr key={f.numFactura} className="border-b border-gray-100 table-row-hover">
+                <tr
+                  key={f.numFactura}
+                  className={`border-b border-gray-100 transition-colors duration-100 ${
+                    f.dia === diaSel
+                      ? "bg-rose-50 hover:bg-rose-100"
+                      : "table-row-hover"
+                  }`}
+                >
                   <td className="px-2 py-1.5">
                     {editandoNums ? (
                       <input
@@ -209,15 +269,15 @@ export default function Inicio({ seccion, mes, anyo, cambiarMes }) {
                       <span className="px-2 text-gray-400 font-mono">{f.numFactura}</span>
                     )}
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600">
+                  <td className="px-4 py-1.5 text-gray-600">
                     {String(f.dia).padStart(2, "0")}/{String(f.mes).padStart(2, "0")}/{f.anyo}
                   </td>
-                  <td className="px-4 py-2.5 font-medium text-gray-800">{f.nombre}</td>
-                  <td className="px-4 py-2.5 text-right font-semibold text-gray-800">{fmt(f.importe)}</td>
-                  <td className="px-4 py-2.5 text-center">
+                  <td className="px-4 py-1.5 font-medium text-gray-800">{f.nombre}</td>
+                  <td className="px-4 py-1.5 text-right font-semibold text-gray-800">{fmt(f.importe)}</td>
+                  <td className="px-4 py-1.5 text-center">
                     <button
                       onClick={() => toggleCobrado(f)}
-                      className={`w-8 h-8 rounded-full text-base transition-colors ${
+                      className={`w-7 h-7 rounded-full text-sm transition-colors ${
                         f.cobrado
                           ? "bg-green-100 text-green-600 hover:bg-green-200"
                           : "bg-gray-100 text-gray-400 hover:bg-amber-100 hover:text-amber-500"
@@ -227,7 +287,7 @@ export default function Inicio({ seccion, mes, anyo, cambiarMes }) {
                       {f.cobrado ? "✓" : "○"}
                     </button>
                   </td>
-                  <td className="px-4 py-2.5 text-center">
+                  <td className="px-4 py-1.5 text-center">
                     <div className="flex gap-1 justify-center">
                       <button
                         onClick={() => setModal(f)}
