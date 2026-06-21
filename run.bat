@@ -1,6 +1,14 @@
 @echo off
 cd /d "%~dp0backend"
 
+:: Si no existe el entorno de Python, avisar de ejecutar setup.bat primero.
+if not exist ".venv\Scripts\python.exe" (
+  echo [ERROR] No se encuentra el entorno de Python (backend\.venv).
+  echo         Ejecuta primero setup.bat para instalar el programa.
+  pause
+  exit /b 1
+)
+
 :: Abrir el navegador tras 2 segundos
 start "" cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:8000"
 

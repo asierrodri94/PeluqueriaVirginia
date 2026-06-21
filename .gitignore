@@ -1,0 +1,17 @@
+# Entornos virtuales Python
+backend/.venv/
+
+# Frontend: dependencias y build
+frontend/node_modules/
+frontend/dist/
+
+# Base de datos (incluye temporales de SQLite: -journal/-wal/-shm)
+peluqueriaVirginia.bd*
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDEs
+.idea/
+.vscode/

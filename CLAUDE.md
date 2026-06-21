@@ -19,7 +19,7 @@ Uso real: el ordenador de la peluquera (la madre de Asier). Idioma de la UI y de
 | Acción | Comando |
 |---|---|
 | Producción (lo que usa la peluquera) | `run.bat` → uvicorn en `localhost:8000`, abre el navegador |
-| Instalación inicial / en otro PC | `setup.bat` (crea venv, instala deps Python y npm, build) |
+| Instalación inicial / en otro PC | `setup.bat` (re-crea venv limpio, instala deps Python y npm, build) |
 | Recompilar solo el frontend | `npm --prefix frontend run build` |
 | Dev frontend con recarga | `npm --prefix frontend run dev` (Vite en :5173, proxy `/api`→:8000) |
 | Arrancar backend a mano | `backend\.venv\Scripts\python.exe -m uvicorn main:app --port 8000` (cwd = `backend/`) |
@@ -35,9 +35,16 @@ Uso real: el ordenador de la peluquera (la madre de Asier). Idioma de la UI y de
   `PredictorBolsa` → `ProyectosAsier`, lo que dejó el `activate` apuntando a una ruta inexistente
   y rompió `run.bat` (jun-2026). Por eso `run.bat`/`setup.bat` ya **no usan `activate`**: invocan
   el `python.exe` del venv por ruta (se autolocaliza vía `pyvenv.cfg`, cuyo `home` es el Python base).
-- `setup.bat` es **portable**: detecta Python con el lanzador `py` (y `python` como fallback) y
-  Node por PATH; no tiene rutas fijas con el usuario de Windows. Requisitos previos en el PC destino:
-  **Python 3.11+ ("Add to PATH") y Node.js LTS** (setup NO los instala).
+- `setup.bat` es **portable y autoreparable**: detecta Python con el lanzador `py` (la versión más
+  reciente instalada; `python` como fallback) y Node por PATH; **no fija ninguna versión** ni tiene rutas
+  con el usuario de Windows. **Borra y recrea `backend\.venv` desde cero** en cada ejecución, para que el
+  binario case con el Python del equipo. `requirements.txt` usa límites mínimos (`>=`, no `==`) para que
+  pip baje una versión con *wheel* para CUALQUIER Python (probado con la última estable, 3.14). Requisitos
+  previos en el PC destino: **Python (cualquier versión reciente, "Add to PATH") y Node.js LTS** (setup NO los instala).
+- **`ModuleNotFoundError: No module named 'pydantic_core._pydantic_core'`** = **venv incoherente**, NO
+  incompatibilidad de versión (la app funciona con la última Python). Pasa si el `.venv` se copió de otro
+  equipo, o se creó con una Python y se ejecuta con otra (el binario `.pyd` queda atado a una versión).
+  Arreglo: borrar `backend\.venv` y volver a ejecutar `setup.bat` (ya lo recrea limpio).
 
 ## Modelo de datos (SQLite) y CONVENCIONES CRÍTICAS
 
@@ -97,8 +104,8 @@ Definido en `backend/database.py`. Tablas:
 
 ## Despliegue en el PC de la peluquera
 
-1. Instalar requisitos en el PC destino: **Python 3.11+** (marcar *Add to PATH*) y **Node.js LTS**.
+1. Instalar requisitos en el PC destino: **Python** (cualquier versión reciente; marcar *Add to PATH*) y **Node.js LTS**.
 2. Copiar la carpeta del proyecto. Para conservar datos, copiar también `peluqueriaVirginia.bd`
-   (si no, arranca vacía). No hace falta copiar `.venv`, `node_modules` ni `dist`: `setup.bat`
-   los regenera.
+   (si no, arranca vacía). **No copies `.venv`, `node_modules` ni `dist`** (no son portables; `setup.bat`
+   los regenera, y copiarlos es justo lo que provoca el `ModuleNotFoundError: pydantic_core._pydantic_core`).
 3. Ejecutar `setup.bat` y luego `run.bat`.

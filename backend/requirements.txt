@@ -1,3 +1,7 @@
-fastapi==0.115.0
-uvicorn==0.30.6
-openpyxl==3.1.5
+# Backend Gestor Peluqueria - dependencias Python.
+# Se usan limites MINIMOS (>=), no versiones fijas (==), a proposito: asi pip instala
+# una version con "wheel" precompilada para CUALQUIER version de Python del equipo
+# (probado con la ultima estable). La app solo usa APIs estables de estas librerias.
+fastapi>=0.115.0
+uvicorn>=0.30.6
+openpyxl>=3.1.5
